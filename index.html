@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Nairobi Expressway Toll System | DICT123 OOP Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:     #080C14;
+    --panel:  #0E1420;
+    --card:   #131B2B;
+    --border: #1C2840;
+    --accent: #00E5A0;
+    --amber:  #F5A623;
+    --blue:   #4A9EFF;
+    --red:    #FF5561;
+    --text:   #D8E8F5;
+    --muted:  #6A7FA0;
+    --mobile: #00E5A0;
+    --cardcl: #4A9EFF;
+    --font:   'DM Mono', monospace;
+    --title:  'Syne', sans-serif;
+  }
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: var(–font);
+min-height: 100vh;
+display: flex;
+flex-direction: column;
+font-size: 14px;
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(–border); border-radius: 2px; }
+
+/* ── HEADER ── */
+header {
+background: linear-gradient(135deg, #0A1020 0%, #0F1930 100%);
+border-bottom: 1px solid var(–border);
+padding: 0 1.5rem;
+height: 64px;
+display: flex;
+align-items: center;
+gap: 1rem;
+position: sticky;
+top: 0;
+z-index: 100;
+}
+
+.logo {
+width: 38px; height: 38px;
+background: linear-gradient(135deg, var(–accent), #009E72);
+border-radius: 10px;
+display: flex; align-items: center; justify-content: center;
+font-size: 18px; flex-shrink: 0;
+box-shadow: 0 0 20px #00E5A033;
+}
+
+.header-title { font-family: var(–title); font-size: 0.9rem; color: var(–text); letter-spacing: 0.04em; }
+.header-sub   { font-size: 0.6rem; color: var(–muted); letter-spacing: 0.14em; text-transform: uppercase; margin-top: 2px; }
+.spacer       { flex: 1; }
+
+.badge {
+padding: 3px 10px;
+border-radius: 20px;
+font-size: 0.58rem;
+font-weight: 700;
+letter-spacing: 0.12em;
+text-transform: uppercase;
+}
+.badge-green { background: #00E5A018; color: var(–accent); border: 1px solid #00E5A040; }
+.badge-amber { background: #F5A62318; color: var(–amber); border: 1px solid #F5A62340; }
+
+#revenue-box { text-align: right; }
+#revenue-label { font-size: 0.55rem; color: var(–muted); letter-spacing: 0.12em; text-transform: uppercase; }
+#revenue-val   { font-size: 0.95rem; font-weight: 700; color: var(–amber); font-family: var(–title); }
+
+/* ── LAYOUT ── */
+.main {
+display: grid;
+grid-template-columns: 360px 1fr;
+flex: 1;
+min-height: 0;
+height: calc(100vh - 64px);
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+background: var(–panel);
+border-right: 1px solid var(–border);
+padding: 1.25rem;
+overflow-y: auto;
+display: flex;
+flex-direction: column;
+gap: 1rem;
+}
+
+/* ── CONTENT ── */
+.content {
+padding: 1.25rem;
+overflow-y: auto;
+display: flex;
+flex-direction: column;
+gap: 1rem;
+}
+
+/* ── SECTION LABEL ── */
+.sec-label {
+font-size: 0.58rem;
+font-weight: 700;
+letter-spacing: 0.18em;
+text-transform: uppercase;
+color: var(–muted);
+display: flex;
+align-items: center;
+gap: 0.4rem;
+margin-bottom: 0.6rem;
+}
+.dot { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+
+/* ── TABS (payment type) ── */
+.type-tabs { display: flex; gap: 0.5rem; }
+.type-tab {
+flex: 1; padding: 0.55rem; border-radius: 8px;
+font-family: var(–font); font-size: 0.68rem; font-weight: 700;
+letter-spacing: 0.1em; text-transform: uppercase;
+cursor: pointer; transition: all 0.2s; border: 1px solid var(–border);
+background: transparent; color: var(–muted);
+}
+.type-tab.active-mobile { background: #00E5A018; color: var(–mobile); border-color: #00E5A044; }
+.type-tab.active-card   { background: #4A9EFF18; color: var(–cardcl); border-color: #4A9EFF44; }
+
+/* ── FORM FIELDS ── */
+.field { display: flex; flex-direction: column; gap: 0.3rem; }
+.field + .field { margin-top: 0.6rem; }
+label { font-size: 0.62rem; color: var(–muted); letter-spacing: 0.1em; text-transform: uppercase; }
+
+input, select {
+background: #060910;
+border: 1px solid var(–border);
+border-radius: 7px;
+color: var(–text);
+padding: 0.52rem 0.75rem;
+font-size: 0.8rem;
+font-family: var(–font);
+outline: none;
+width: 100%;
+transition: border-color 0.2s;
+appearance: none;
+}
+input:focus, select:focus { border-color: var(–accent); }
+input::placeholder { color: #3A4A60; }
+select { cursor: pointer; background-image: url(“data:image/svg+xml,%3Csvg xmlns=‘http://www.w3.org/2000/svg’ width=‘10’ height=‘6’%3E%3Cpath d=‘M0 0l5 6 5-6z’ fill=’%236A7FA0’/%3E%3C/svg%3E”); background-repeat: no-repeat; background-position: right 0.75rem center; padding-right: 2rem; }
+select option { background: #0A1020; }
+
+/* ── PREVIEW BOX ── */
+.preview {
+border-radius: 10px;
+padding: 0.85rem 1rem;
+transition: all 0.3s;
+}
+.preview-mobile { background: #00E5A010; border: 1px solid #00E5A030; }
+.preview-card   { background: #4A9EFF10; border: 1px solid #4A9EFF30; }
+.preview-label  { font-size: 0.58rem; color: var(–muted); letter-spacing: 0.12em; text-transform: uppercase; }
+.preview-val    { font-size: 1.3rem; font-weight: 700; font-family: var(–title); margin-top: 4px; }
+.preview-formula{ font-size: 0.6rem; color: var(–muted); margin-top: 3px; }
+
+/* ── ERROR ── */
+.error {
+color: var(–red); font-size: 0.7rem;
+padding: 0.5rem 0.75rem;
+background: #FF556110; border: 1px solid #FF556130; border-radius: 7px;
+}
+
+/* ── BUTTONS ── */
+.btn {
+font-family: var(–font); font-size: 0.72rem; font-weight: 700;
+letter-spacing: 0.1em; text-transform: uppercase;
+border: none; border-radius: 8px; cursor: pointer;
+transition: all 0.18s; padding: 0.7rem 1.25rem;
+}
+.btn-mobile { background: linear-gradient(135deg, var(–mobile), #009E72); color: #000; width: 100%; }
+.btn-card   { background: linear-gradient(135deg, var(–cardcl), #2270CC); color: #000; width: 100%; }
+.btn-clear  { background: transparent; border: 1px solid var(–red); color: var(–red); width: 100%; margin-top: 0.4rem; }
+.btn:hover  { filter: brightness(1.1); transform: translateY(-1px); }
+.btn:active { transform: scale(0.97); }
+
+/* ── STATS ── */
+.stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; }
+.stat {
+background: #060910; border: 1px solid var(–border); border-radius: 8px;
+padding: 0.6rem; text-align: center;
+}
+.stat-val   { font-size: 1.05rem; font-weight: 700; font-family: var(–title); }
+.stat-label { font-size: 0.54rem; color: var(–muted); letter-spacing: 0.1em; text-transform: uppercase; margin-top: 2px; }
+
+/* ── MAIN TABS ── */
+.tabs {
+display: flex; gap: 0.4rem;
+background: var(–panel); border: 1px solid var(–border);
+border-radius: 10px; padding: 0.35rem;
+}
+.tab {
+flex: 1; padding: 0.48rem; border-radius: 7px;
+border: none; background: transparent;
+color: var(–muted); font-family: var(–font);
+font-size: 0.68rem; font-weight: 700;
+letter-spacing: 0.08em; text-transform: uppercase;
+cursor: pointer; transition: all 0.2s;
+}
+.tab.active { background: var(–card); color: var(–text); }
+
+/* ── RECEIPT CARDS ── */
+.receipt {
+background: var(–card);
+border: 1px solid var(–border);
+border-radius: 12px;
+padding: 1.1rem;
+animation: slideIn 0.35s ease;
+position: relative;
+}
+.receipt-mobile { border-left: 3px solid var(–mobile); }
+.receipt-card   { border-left: 3px solid var(–cardcl); }
+
+@keyframes slideIn {
+from { opacity: 0; transform: translateY(10px); }
+to   { opacity: 1; transform: translateY(0); }
+}
+
+.receipt-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.receipt-grid   { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 1rem; }
+.receipt-field-label { font-size: 0.58rem; color: var(–muted); letter-spacing: 0.1em; text-transform: uppercase; }
+.receipt-field-val   { font-size: 0.82rem; font-weight: 600; margin-top: 1px; }
+.receipt-footer {
+display: flex; justify-content: space-between; align-items: center;
+margin-top: 0.85rem; padding-top: 0.85rem; border-top: 1px solid var(–border);
+}
+.receipt-formula { font-size: 0.6rem; color: var(–muted); }
+.receipt-charge  { font-size: 1.1rem; font-weight: 700; font-family: var(–title); }
+
+.remove-btn {
+background: none; border: none; color: var(–muted);
+cursor: pointer; font-size: 0.9rem; padding: 0 0.25rem;
+transition: color 0.2s;
+}
+.remove-btn:hover { color: var(–red); }
+
+/* ── EMPTY STATE ── */
+.empty {
+background: var(–card); border: 1px solid var(–border);
+border-radius: 12px; padding: 3rem; text-align: center; color: var(–muted);
+}
+.empty-icon { font-size: 2.8rem; margin-bottom: 0.75rem; }
+.empty-title { font-size: 0.85rem; margin-bottom: 0.4rem; color: var(–text); }
+.empty-sub   { font-size: 0.7rem; }
+
+/* ── CONSOLE ── */
+.console-wrap {
+background: #050810;
+border: 1px solid var(–border);
+border-radius: 10px;
+overflow: hidden;
+}
+.console-chrome {
+background: #0A1020;
+border-bottom: 1px solid var(–border);
+padding: 0.45rem 1rem;
+display: flex; align-items: center; gap: 0.45rem;
+}
+.console-dot { width: 10px; height: 10px; border-radius: 50%; }
+.console-title { font-size: 0.62rem; color: var(–muted); margin-left: 0.4rem; }
+.console-body {
+padding: 1rem 1.25rem;
+font-family: var(–font);
+font-size: 0.72rem;
+line-height: 1.75;
+color: #8AFFCF;
+white-space: pre;
+overflow-x: auto;
+min-height: 200px;
+}
+
+/* ── CODE PANEL ── */
+.code-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.code-btn {
+padding: 0.42rem 0.85rem; border-radius: 7px;
+font-family: var(–font); font-size: 0.65rem; font-weight: 700;
+letter-spacing: 0.1em; text-transform: uppercase;
+cursor: pointer; transition: all 0.2s;
+}
+.code-btn-base   { background: #F5A62320; color: var(–amber);  border: 1px solid #F5A62350; }
+.code-btn-mobile { background: #00E5A020; color: var(–mobile); border: 1px solid #00E5A050; }
+.code-btn-card   { background: #4A9EFF20; color: var(–cardcl); border: 1px solid #4A9EFF50; }
+.code-btn.active { filter: brightness(1.4); }
+
+.editor-wrap { background: #050810; border: 1px solid var(–border); border-radius: 10px; overflow: hidden; }
+.editor-chrome {
+background: #0A1020; border-bottom: 1px solid var(–border);
+padding: 0.45rem 1rem; display: flex; align-items: center; gap: 0.4rem;
+}
+.editor-file { font-size: 0.62rem; color: var(–muted); margin-left: 0.5rem; }
+.editor-body { padding: 1.1rem 1.25rem; overflow-x: auto; }
+.code-line { display: flex; gap: 0.75rem; line-height: 1.8; }
+.line-num { color: #2A3A55; font-size: 0.65rem; min-width: 24px; user-select: none; padding-top: 1px; text-align: right; }
+.line-code { font-size: 0.75rem; font-family: var(–font); white-space: pre; }
+
+/* Syntax colors */
+.kw   { color: #FF79C6; }
+.cls  { color: #50FA7B; }
+.str  { color: #F1FA8C; }
+.num  { color: #BD93F9; }
+.cmt  { color: #4A5E82; font-style: italic; }
+.op   { color: #FF79C6; }
+.def  { color: #8BE9FD; }
+.norm { color: #C5D8FF; }
+
+.explain-box {
+background: var(–card);
+border: 1px solid #F5A62330;
+border-left: 3px solid var(–amber);
+border-radius: 10px;
+padding: 1rem 1.1rem;
+}
+.explain-label { font-size: 0.6rem; color: var(–amber); font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 0.5rem; }
+.explain-text  { font-size: 0.76rem; line-height: 1.75; color: #AABCD8; }
+
+/* ── PULSE ANIMATION ── */
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.25} }
+.pulse { animation: pulse 1.8s infinite; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 768px) {
+.main { grid-template-columns: 1fr; height: auto; }
+.sidebar { height: auto; }
+}
+</style>
+
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────────────────────────── -->
+
+<header>
+  <div class="logo">🛣️</div>
+  <div>
+    <div class="header-title">Nairobi Expressway Toll System</div>
+    <div class="header-sub">DICT123 · OOP with C++ · Interactive Demo</div>
+  </div>
+  <div class="spacer"></div>
+  <span class="badge badge-green">Live Simulation</span>
+  <div id="revenue-box" style="display:none">
+    <div class="revenue-label">Total Revenue</div>
+    <div id="revenue-val" class="badge badge-amber" style="font-size:0.85rem;padding:4px 12px"></div>
+  </div>
+</header>
+
+<!-- ── MAIN ────────────────────────────────────────────────────────────────── -->
+
+<div class="main">
+
+  <!-- ── SIDEBAR ── -->
+
+  <div class="sidebar">
+
+```
+<!-- Payment type -->
+<div>
+  <div class="sec-label"><span class="dot" style="background:var(--accent)"></span>Payment Method</div>
+  <div class="type-tabs">
+    <button class="type-tab active-mobile" id="tab-mobile" onclick="setPayType('mobile')">📱 Mobile</button>
+    <button class="type-tab" id="tab-card"   onclick="setPayType('card')">💳 Card</button>
+  </div>
+</div>
+
+<!-- Vehicle details -->
+<div>
+  <div class="sec-label"><span class="dot" style="background:var(--blue)"></span>Vehicle Details</div>
+  <div class="field">
+    <label>Car Type</label>
+    <select id="carType">
+      <option>Saloon</option><option>Truck</option><option>Van</option>
+      <option>SUV</option><option>Minibus</option>
+    </select>
+  </div>
+  <div class="field">
+    <label>Number Plate</label>
+    <input type="text" id="plate" placeholder="e.g. KCA 001A" style="text-transform:uppercase"
+           oninput="updatePreview()" onkeydown="if(event.key==='Enter')addEntry()"/>
+  </div>
+  <div class="field">
+    <label>Distance (km)</label>
+    <input type="number" id="km" placeholder="e.g. 30" min="0.1" step="0.1"
+           oninput="updatePreview()" onkeydown="if(event.key==='Enter')addEntry()"/>
+  </div>
+</div>
+
+<!-- Provider / Bank -->
+<div id="payment-details">
+  <div class="sec-label"><span class="dot" id="pay-dot" style="background:var(--mobile)"></span>
+    <span id="pay-label">Mobile Money</span></div>
+  <div class="field" id="mobile-field">
+    <label>Mobile Provider</label>
+    <select id="provider">
+      <option>Mpesa</option><option>Airtel Money</option>
+      <option>T-Kash</option><option>Equitel</option>
+    </select>
+  </div>
+  <div class="field" id="card-field" style="display:none">
+    <label>Bank Name</label>
+    <select id="bank">
+      <option>Cooperative Bank</option><option>KCB</option>
+      <option>Equity Bank</option><option>Stanbic</option><option>NCBA</option>
+    </select>
+  </div>
+</div>
+
+<!-- Live preview -->
+<div class="preview preview-mobile" id="preview-box" style="display:none">
+  <div class="preview-label">Live Charge Preview</div>
+  <div class="preview-val" id="preview-val" style="color:var(--mobile)"></div>
+  <div class="preview-formula" id="preview-formula"></div>
+</div>
+
+<!-- Error -->
+<div class="error" id="err-box" style="display:none"></div>
+
+<!-- Add button -->
+<button class="btn btn-mobile" id="add-btn" onclick="addEntry()">+ Add Mobile Payment</button>
+<button class="btn btn-clear" id="clear-btn" onclick="clearAll()" style="display:none">Clear All Records</button>
+
+<!-- Stats -->
+<div class="stats" id="stats-box" style="display:none">
+  <div class="stat">
+    <div class="stat-val" id="stat-total" style="color:var(--text)">0</div>
+    <div class="stat-label">Records</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" id="stat-mobile" style="color:var(--mobile)">0</div>
+    <div class="stat-label">Mobile</div>
+  </div>
+  <div class="stat">
+    <div class="stat-val" id="stat-card" style="color:var(--cardcl)">0</div>
+    <div class="stat-label">Card</div>
+  </div>
+</div>
+```
+
+  </div><!-- /sidebar -->
+
+  <!-- ── CONTENT ── -->
+
+  <div class="content">
+
+```
+<!-- Main tab bar -->
+<div class="tabs">
+  <button class="tab active" onclick="showTab('receipts',this)">📋 Receipts</button>
+  <button class="tab"        onclick="showTab('console',this)">⌨️ Console Output</button>
+  <button class="tab"        onclick="showTab('code',this)">💻 C++ Code</button>
+</div>
+
+<!-- ── RECEIPTS ── -->
+<div id="pane-receipts">
+  <div class="empty" id="empty-state">
+    <div class="empty-icon">🛣️</div>
+    <div class="empty-title">No transactions yet</div>
+    <div class="empty-sub">Add a payment using the form on the left</div>
+  </div>
+  <div id="receipts-list" style="display:flex;flex-direction:column;gap:0.75rem"></div>
+</div>
+
+<!-- ── CONSOLE ── -->
+<div id="pane-console" style="display:none">
+  <div class="console-wrap">
+    <div class="console-chrome">
+      <div class="console-dot" style="background:#FF5561"></div>
+      <div class="console-dot" style="background:#FFBD2E"></div>
+      <div class="console-dot" style="background:#27C93F"></div>
+      <div class="console-title">bash — toll_system (running)</div>
+      <span class="dot pulse" style="background:var(--accent);margin-left:auto"></span>
+    </div>
+    <div class="console-body" id="console-body">  No payments recorded yet.
+```
+
+Use the form on the left to add transactions.</div>
+</div>
+</div>
+
+```
+<!-- ── CODE ── -->
+<div id="pane-code" style="display:none">
+  <div class="code-btns">
+    <button class="code-btn code-btn-base active"   onclick="showSnippet('base',this)">Abstract Base Class</button>
+    <button class="code-btn code-btn-mobile"        onclick="showSnippet('mobile',this)">MobilePayment</button>
+    <button class="code-btn code-btn-card"          onclick="showSnippet('card',this)">CardPayment</button>
+  </div>
+  <div class="editor-wrap">
+    <div class="editor-chrome">
+      <div class="console-dot" style="background:#FF5561"></div>
+      <div class="console-dot" style="background:#FFBD2E"></div>
+      <div class="console-dot" style="background:#27C93F"></div>
+      <div class="editor-file">toll_system.cpp</div>
+    </div>
+    <div class="editor-body" id="editor-body"></div>
+  </div>
+  <div class="explain-box">
+    <div class="explain-label">📖 OOP Concept</div>
+    <div class="explain-text" id="explain-text"></div>
+  </div>
+</div>
+```
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let payType = 'mobile';
+let entries = [];
+let counter = 1;
+
+// ── PRICING ──────────────────────────────────────────────────────────────────
+const computeMobile = km => 10 * km + 100;
+const computeCard   = km => { const g = 15 * km; return g - g * 0.10; };
+const fmt = n => 'KSh ' + Number(n).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+
+// ── PAY TYPE ─────────────────────────────────────────────────────────────────
+function setPayType(t) {
+  payType = t;
+  document.getElementById('tab-mobile').className = 'type-tab' + (t==='mobile' ? ' active-mobile' : '');
+  document.getElementById('tab-card').className   = 'type-tab' + (t==='card'   ? ' active-card'   : '');
+  document.getElementById('mobile-field').style.display = t==='mobile' ? '' : 'none';
+  document.getElementById('card-field').style.display   = t==='card'   ? '' : 'none';
+  document.getElementById('pay-label').textContent = t==='mobile' ? 'Mobile Money' : 'Bank Card';
+  document.getElementById('pay-dot').style.background   = t==='mobile' ? 'var(--mobile)' : 'var(--cardcl)';
+  document.getElementById('add-btn').className = 'btn btn-' + t;
+  document.getElementById('add-btn').textContent = '+ Add ' + (t==='mobile' ? 'Mobile' : 'Card') + ' Payment';
+  const pb = document.getElementById('preview-box');
+  pb.className = 'preview preview-' + t;
+  updatePreview();
+}
+
+// ── LIVE PREVIEW ─────────────────────────────────────────────────────────────
+function updatePreview() {
+  const km = parseFloat(document.getElementById('km').value);
+  const pb = document.getElementById('preview-box');
+  if (!km || km <= 0) { pb.style.display = 'none'; return; }
+  pb.style.display = '';
+  const charge = payType === 'mobile' ? computeMobile(km) : computeCard(km);
+  document.getElementById('preview-val').style.color = payType==='mobile' ? 'var(--mobile)' : 'var(--cardcl)';
+  document.getElementById('preview-val').textContent = fmt(charge);
+  document.getElementById('preview-formula').textContent = payType==='mobile'
+    ? `(10 × ${km}) + 100 = ${charge.toFixed(2)}`
+    : `(15 × ${km}) − 10% = ${charge.toFixed(2)}`;
+}
+
+// ── ADD ENTRY ─────────────────────────────────────────────────────────────────
+function addEntry() {
+  const plate = document.getElementById('plate').value.trim().toUpperCase();
+  const km    = parseFloat(document.getElementById('km').value);
+  const errBox = document.getElementById('err-box');
+
+  if (!plate) { showErr('Number plate is required.'); return; }
+  if (!km || km <= 0) { showErr('Enter a valid distance greater than 0.'); return; }
+  errBox.style.display = 'none';
+
+  const entry = {
+    id:     counter++,
+    type:   payType,
+    carType:  document.getElementById('carType').value,
+    numberPlate: plate,
+    km,
+    provider: document.getElementById('provider').value,
+    bank:     document.getElementById('bank').value,
+    charge:   payType==='mobile' ? computeMobile(km) : computeCard(km),
+  };
+  entries.push(entry);
+  document.getElementById('plate').value = '';
+  document.getElementById('km').value   = '';
+  document.getElementById('preview-box').style.display = 'none';
+  renderAll();
+}
+
+function showErr(msg) {
+  const b = document.getElementById('err-box');
+  b.textContent = '⚠ ' + msg;
+  b.style.display = '';
+  setTimeout(() => b.style.display = 'none', 3000);
+}
+
+function removeEntry(id) {
+  entries = entries.filter(e => e.id !== id);
+  renderAll();
+}
+
+function clearAll() {
+  entries = []; counter = 1; renderAll();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderReceipts();
+  renderConsole();
+  renderStats();
+}
+
+function renderReceipts() {
+  const list  = document.getElementById('receipts-list');
+  const empty = document.getElementById('empty-state');
+  list.innerHTML = '';
+  if (entries.length === 0) { empty.style.display = ''; return; }
+  empty.style.display = 'none';
+  entries.forEach(e => {
+    const color = e.type==='mobile' ? 'var(--mobile)' : 'var(--cardcl)';
+    const label = e.type==='mobile' ? '📱 Mobile' : '💳 Card';
+    const formula = e.type==='mobile' ? '(10 × km) + 100' : '(15 × km) − 10%';
+    const detail  = e.type==='mobile' ? ['Provider', e.provider] : ['Bank', e.bank];
+    const div = document.createElement('div');
+    div.className = 'receipt receipt-' + e.type;
+    div.innerHTML = `
+      <div class="receipt-header">
+        <div style="display:flex;gap:0.6rem;align-items:center">
+          <span class="badge" style="background:${color}18;color:${color};border:1px solid ${color}44">${label}</span>
+          <span style="font-size:0.65rem;color:var(--muted)">#${e.id}</span>
+        </div>
+        <button class="remove-btn" onclick="removeEntry(${e.id})">✕</button>
+      </div>
+      <div class="receipt-grid">
+        <div><div class="receipt-field-label">Plate</div><div class="receipt-field-val">${e.numberPlate}</div></div>
+        <div><div class="receipt-field-label">Car Type</div><div class="receipt-field-val">${e.carType}</div></div>
+        <div><div class="receipt-field-label">Distance</div><div class="receipt-field-val">${e.km} km</div></div>
+        <div><div class="receipt-field-label">${detail[0]}</div><div class="receipt-field-val">${detail[1]}</div></div>
+      </div>
+      <div class="receipt-footer">
+        <div class="receipt-formula">${formula}</div>
+        <div class="receipt-charge" style="color:${color}">${fmt(e.charge)}</div>
+      </div>`;
+    list.appendChild(div);
+  });
+}
+
+function renderConsole() {
+  const out = [];
+  const sep = '  ' + '─'.repeat(49);
+  out.push('  ╔══════════════════════════════════════════════════╗');
+  out.push('  ║      NAIROBI EXPRESSWAY TOLL SYSTEM  v1.0       ║');
+  out.push('  ╚══════════════════════════════════════════════════╝');
+  out.push('');
+
+  if (entries.length === 0) {
+    out.push('  No payments recorded yet.');
+    out.push('  Use the form on the left to add transactions.');
+  } else {
+    entries.forEach((e, i) => {
+      const type = e.type==='mobile' ? 'MOBILE PAYMENT RECEIPT' : 'CARD PAYMENT RECEIPT';
+      out.push(`  ┌─ ${type} ─ Record #${i+1} ─────────`);
+      out.push(`  │  Car Type       : ${e.carType}`);
+      out.push(`  │  Number Plate   : ${e.numberPlate}`);
+      out.push(`  │  Distance (km)  : ${e.km}`);
+      if (e.type==='mobile') out.push(`  │  Provider       : ${e.provider}`);
+      else                   out.push(`  │  Bank Name      : ${e.bank}`);
+      out.push(`  │  Charge (KSh)   : ${e.charge.toFixed(2)}`);
+      out.push(`  └${'─'.repeat(48)}`);
+      out.push('');
+    });
+    const total = entries.reduce((s,e) => s + e.charge, 0);
+    out.push(sep);
+    out.push(`  ${'#'.padEnd(5)}${'PLATE'.padEnd(14)}${'TYPE'.padEnd(10)}${'KM'.padEnd(8)}CHARGE (KSh)`);
+    out.push(sep);
+    entries.forEach((e,i) => {
+      out.push(`  ${String(i+1).padEnd(5)}${e.numberPlate.padEnd(14)}${e.carType.padEnd(10)}${String(e.km).padEnd(8)}${e.charge.toFixed(2)}`);
+    });
+    out.push(sep);
+    out.push(`  TOTAL REVENUE  :  KSh ${total.toFixed(2)}`);
+    out.push('');
+    out.push('  [OK] All records processed. Memory freed via delete.');
+  }
+  document.getElementById('console-body').textContent = out.join('\n');
+}
+
+function renderStats() {
+  const n = entries.length;
+  const mobile = entries.filter(e=>e.type==='mobile').length;
+  const card   = entries.filter(e=>e.type==='card').length;
+  const total  = entries.reduce((s,e)=>s+e.charge,0);
+
+  document.getElementById('stats-box').style.display  = n ? '' : 'none';
+  document.getElementById('clear-btn').style.display  = n ? '' : 'none';
+  document.getElementById('stat-total').textContent   = n;
+  document.getElementById('stat-mobile').textContent  = mobile;
+  document.getElementById('stat-card').textContent    = card;
+
+  const rb = document.getElementById('revenue-box');
+  rb.style.display = n ? '' : 'none';
+  document.getElementById('revenue-val').textContent = fmt(total);
+}
+
+// ── TAB SWITCHING ─────────────────────────────────────────────────────────────
+function showTab(id, btn) {
+  ['receipts','console','code'].forEach(t => {
+    document.getElementById('pane-'+t).style.display = t===id ? '' : 'none';
+  });
+  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (id==='console') renderConsole();
+  if (id==='code')    showSnippet(currentSnippet, document.querySelector('.code-btn.active'));
+}
+
+// ── CODE SNIPPETS ─────────────────────────────────────────────────────────────
+let currentSnippet = 'base';
+
+const SNIPPETS = {
+  base: [
+    ['cmt','// ABSTRACT BASE CLASS: TollPayment'],
+    ['kw','class '],['cls','TollPayment '],['norm','{'],
+    ['kw','protected:'],
+    ['norm','    '],['kw','string '],['norm','carType;'],
+    ['norm','    '],['kw','string '],['norm','numberPlate;'],
+    ['norm','    '],['kw','double '],['norm','kilometers;'],
+    ['norm',''],
+    ['kw','public:'],
+    ['norm','    '],['cmt','// Constructor'],
+    ['norm','    '],['cls','TollPayment'],['norm','('],['kw','string '],['norm','ct, '],['kw','string '],['norm','np, '],['kw','double '],['norm','km)'],
+    ['norm','        : carType(ct), numberPlate(np), kilometers(km) {}'],
+    ['norm',''],
+    ['norm','    '],['cmt','// Pure virtual = abstract class'],
+    ['norm','    '],['kw','virtual '],['kw','void '],['def','getDetails'],['norm','() = 0;'],
+    ['norm','    '],['kw','virtual '],['kw','void '],['def','displayDetails'],['norm','() '],['kw','const '],['norm','= 0;'],
+    ['norm','    '],['kw','virtual '],['kw','double '],['def','computeCharge'],['norm','() '],['kw','const '],['norm','= 0;'],
+    ['norm','    '],['kw','virtual '],['cls','~TollPayment'],['norm','() {}'],
+    ['norm','};'],
+  ],
+  mobile: [
+    ['cmt','// DERIVED CLASS: MobilePayment'],
+    ['kw','class '],['cls','MobilePayment '],['norm',': '],['kw','public '],['cls','TollPayment '],['norm','{'],
+    ['kw','private:'],
+    ['norm','    '],['kw','string '],['norm','mobileMoneyProvider;'],
+    ['norm',''],
+    ['kw','public:'],
+    ['norm','    '],['cmt','// Constructor with initializer list'],
+    ['norm','    '],['cls','MobilePayment'],['norm','('],['kw','string '],['norm','ct, '],['kw','string '],['norm','np,'],
+    ['norm','                   '],['kw','double '],['norm','km, '],['kw','string '],['norm','provider)'],
+    ['norm','        : '],['cls','TollPayment'],['norm','(ct, np, km),'],
+    ['norm','          mobileMoneyProvider(provider) {}'],
+    ['norm',''],
+    ['norm','    '],['kw','double '],['def','computeCharge'],['norm','() '],['kw','const override '],['norm','{'],
+    ['norm','        '],['cmt','// 10 KSh/km + 100 mobile charge'],
+    ['norm','        '],['kw','return '],['norm','('],['num','10.0'],['norm',' * kilometers) + '],['num','100.0'],['norm',';'],
+    ['norm','    }'],
+    ['norm',''],
+    ['norm','    '],['kw','void '],['def','displayDetails'],['norm','() '],['kw','const override '],['norm','{ /* ... */ }'],
+    ['norm','    '],['kw','void '],['def','getDetails'],['norm','() '],['kw','override '],['norm','{ /* ... */ }'],
+    ['norm','};'],
+  ],
+  card: [
+    ['cmt','// DERIVED CLASS: CardPayment'],
+    ['kw','class '],['cls','CardPayment '],['norm',': '],['kw','public '],['cls','TollPayment '],['norm','{'],
+    ['kw','private:'],
+    ['norm','    '],['kw','string '],['norm','bankName;'],
+    ['norm',''],
+    ['kw','public:'],
+    ['norm','    '],['cmt','// Constructor'],
+    ['norm','    '],['cls','CardPayment'],['norm','('],['kw','string '],['norm','ct, '],['kw','string '],['norm','np,'],
+    ['norm','                  '],['kw','double '],['norm','km, '],['kw','string '],['norm','bank)'],
+    ['norm','        : '],['cls','TollPayment'],['norm','(ct, np, km),'],
+    ['norm','          bankName(bank) {}'],
+    ['norm',''],
+    ['norm','    '],['kw','double '],['def','computeCharge'],['norm','() '],['kw','const override '],['norm','{'],
+    ['norm','        '],['cmt','// 15 KSh/km less 10% discount'],
+    ['norm','        '],['kw','double '],['norm','gross = '],['num','15.0'],['norm',' * kilometers;'],
+    ['norm','        '],['kw','double '],['norm','discount = gross * '],['num','0.10'],['norm',';'],
+    ['norm','        '],['kw','return '],['norm','gross - discount;'],
+    ['norm','    }'],
+    ['norm',''],
+    ['norm','    '],['kw','void '],['def','displayDetails'],['norm','() '],['kw','const override '],['norm','{ /* ... */ }'],
+    ['norm','    '],['kw','void '],['def','getDetails'],['norm','() '],['kw','override '],['norm','{ /* ... */ }'],
+    ['norm','};'],
+  ],
+};
+
+const EXPLAINS = {
+  base:   'TollPayment is an <strong>abstract class</strong> — it contains pure virtual functions (= 0), which means no object of TollPayment can ever be created directly. Both MobilePayment and CardPayment <em>must</em> override all pure virtual methods or they too become abstract. This enforces the OOP principle of abstraction.',
+  mobile: 'MobilePayment inherits from TollPayment via <strong>public inheritance</strong>. It calls the base class constructor through the initializer list <code>: TollPayment(ct, np, km)</code>, reusing the base class\'s carType, numberPlate, and kilometers. The charge formula is: <code>(10 × km) + 100 KSh</code>.',
+  card:   'CardPayment also inherits from TollPayment and overrides <code>computeCharge()</code> with a different pricing model — a gross charge of 15 KSh/km with a 10% discount applied. The <code>override</code> keyword tells the compiler to verify the function signature matches the base class virtual function.',
+};
+
+function showSnippet(id, btn) {
+  currentSnippet = id;
+  document.querySelectorAll('.code-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+
+  const body = document.getElementById('editor-body');
+  const lines = SNIPPETS[id];
+
+  // Group consecutive tokens into visual lines
+  const visual = [];
+  let cur = [];
+  lines.forEach(([cls, text]) => {
+    if (cur.length && text === '' && cls === 'norm') {
+      visual.push(cur); cur = [['norm','']];
+    } else {
+      cur.push([cls, text]);
+    }
+  });
+  if (cur.length) visual.push(cur);
+
+  body.innerHTML = visual.map((tokens, i) => {
+    const code = tokens.map(([c,t]) =>
+      `<span class="${c}">${t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span>`
+    ).join('');
+    return `<div class="code-line"><span class="line-num">${i+1}</span><span class="line-code">${code}</span></div>`;
+  }).join('');
+
+  document.getElementById('explain-text').innerHTML = EXPLAINS[id];
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+showSnippet('base', null);
+</script>
+
+</body>
+</html>
